@@ -1,0 +1,127 @@
+import type { MarketEvent } from "@/types/market";
+import { stocks } from "./stocks";
+
+const byCode = (codes: string[]) => stocks.filter((stock) => codes.includes(stock.code));
+
+export const marketEvents: MarketEvent[] = [
+  {
+    id: "event-2026-05-fed",
+    date: "2026-05-06",
+    title: "美联储议息",
+    fullTitle: "美联储 FOMC 议息会议与主席发布会",
+    eventType: "宏观政策",
+    market: ["美股", "全球", "A股"],
+    importanceLevel: "高",
+    relatedSectors: ["AI算力", "半导体", "新能源"],
+    relatedStocks: byCode(["NVDA", "TSLA", "MSFT"]),
+    description: "全球资产定价的重要宏观节点，市场重点关注利率路径、通胀表述和流动性预期。",
+    expectedImpact: "若降息预期升温，成长股和风险资产可能受益；若表述偏鹰，A股外资风险偏好可能承压。",
+    source: "全球宏观日历",
+    sourceUrl: "https://www.federalreserve.gov/"
+  },
+  {
+    id: "event-2026-05-china-pmi",
+    date: "2026-05-31",
+    title: "中国PMI",
+    fullTitle: "中国官方制造业 PMI 数据发布",
+    eventType: "经济数据",
+    market: ["A股", "港股"],
+    importanceLevel: "高",
+    relatedSectors: ["消费", "新能源", "国企改革"],
+    relatedStocks: byCode(["300750"]),
+    description: "PMI 是观察制造业景气度和政策预期的重要领先指标。",
+    expectedImpact: "数据改善有利于顺周期、制造业和消费复苏交易；低于预期可能强化政策加码预期。",
+    source: "国家统计局",
+    sourceUrl: "https://www.stats.gov.cn/"
+  },
+  {
+    id: "event-2026-05-nvidia",
+    date: "2026-05-28",
+    title: "英伟达财报",
+    fullTitle: "英伟达季度财报及 AI 芯片需求指引",
+    eventType: "公司财报",
+    market: ["美股", "全球", "A股"],
+    importanceLevel: "高",
+    relatedSectors: ["AI算力", "半导体", "云计算"],
+    relatedStocks: byCode(["NVDA", "MSFT", "002230"]),
+    description: "AI 算力产业链核心公司财报，影响全球 AI 硬件和应用风险偏好。",
+    expectedImpact: "若数据中心收入和指引强劲，A股光模块、服务器、液冷和芯片映射方向可能活跃。",
+    source: "公司公告",
+    sourceUrl: "https://investor.nvidia.com/"
+  },
+  {
+    id: "event-2026-05-hk-ipo",
+    date: "2026-05-22",
+    title: "港股IPO",
+    fullTitle: "港股科技消费企业 IPO 申购窗口",
+    eventType: "IPO",
+    market: ["港股", "A股"],
+    importanceLevel: "中",
+    relatedSectors: ["消费", "互联网"],
+    relatedStocks: byCode(["00700"]),
+    description: "港股新股情绪可映射到 A股相关行业估值和南向资金偏好。",
+    expectedImpact: "若认购热度较高，可能改善港股风险偏好，并带动相关产业链关注。",
+    source: "交易所公告",
+    sourceUrl: "https://www.hkexnews.hk/"
+  },
+  {
+    id: "event-2026-06-apple-wwdc",
+    date: "2026-06-08",
+    title: "苹果WWDC",
+    fullTitle: "苹果全球开发者大会 WWDC",
+    eventType: "科技发布会",
+    market: ["美股", "全球", "A股"],
+    importanceLevel: "高",
+    relatedSectors: ["消费电子", "AI算力", "半导体"],
+    relatedStocks: byCode(["AAPL", "002415"]),
+    description: "市场关注端侧 AI、操作系统更新、硬件生态和开发者工具变化。",
+    expectedImpact: "端侧 AI 进展可能带动消费电子、芯片、传感器和软件生态链条。",
+    source: "公司公告",
+    sourceUrl: "https://www.apple.com/"
+  },
+  {
+    id: "event-2026-06-cpi",
+    date: "2026-06-10",
+    title: "美国CPI",
+    fullTitle: "美国 CPI 通胀数据发布",
+    eventType: "经济数据",
+    market: ["美股", "全球", "A股"],
+    importanceLevel: "高",
+    relatedSectors: ["半导体", "新能源", "贵金属"],
+    relatedStocks: byCode(["NVDA", "TSLA"]),
+    description: "通胀数据直接影响美联储政策预期和美元利率。",
+    expectedImpact: "低于预期利好全球风险资产，高于预期可能压制成长股估值。",
+    source: "全球宏观日历",
+    sourceUrl: "https://www.bls.gov/"
+  },
+  {
+    id: "event-2026-06-robotics",
+    date: "2026-06-18",
+    title: "机器人大会",
+    fullTitle: "全球机器人与具身智能产业大会",
+    eventType: "产业会议",
+    market: ["A股", "美股", "全球"],
+    importanceLevel: "中",
+    relatedSectors: ["机器人", "AI算力", "传感器"],
+    relatedStocks: byCode(["TSLA", "002230"]),
+    description: "产业链公司展示人形机器人、工业自动化和具身智能方案。",
+    expectedImpact: "催化核心零部件、控制系统、传感器和模型应用方向主题交易。",
+    source: "全球产业会议",
+    sourceUrl: "https://example.com/robotics"
+  },
+  {
+    id: "event-2026-06-a-share-delivery",
+    date: "2026-06-19",
+    title: "期指交割",
+    fullTitle: "A股股指期货交割日",
+    eventType: "市场交易",
+    market: ["A股"],
+    importanceLevel: "中",
+    relatedSectors: ["国企改革", "半导体", "消费"],
+    relatedStocks: byCode(["688981", "300750"]),
+    description: "股指期货交割日前后市场波动和权重股资金行为可能放大。",
+    expectedImpact: "短线波动可能上升，资金更关注权重板块和高流动性品种。",
+    source: "交易所公告",
+    sourceUrl: "https://www.cffex.com.cn/"
+  }
+];
