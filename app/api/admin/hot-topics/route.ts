@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
     const result = await createHotTopic(body as HotTopicCreateInput);
 
-    return ok(result.data, result.source === "supabase" ? "热点信息已写入 Supabase" : "热点信息已模拟创建，本地缺少 Supabase env");
+    return ok(result.data, result.source === "supabase" ? "热点信息已写入 Supabase" : "热点信息已模拟创建，当前环境缺少 Supabase 写入配置");
   } catch (error) {
     return fail(error instanceof Error ? error.message : "请求体不是合法 JSON");
   }

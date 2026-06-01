@@ -1,7 +1,7 @@
 import { filterEvents, filterTopics, type EventFilters, type TopicFilters } from "@/lib/filters";
 import { marketEvents } from "@/lib/mock/events";
 import { hotTopics } from "@/lib/mock/hotTopics";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getSupabaseAdmin, getSupabaseReadClient } from "@/lib/supabase-admin";
 import { mapHotTopicRow, mapMarketEventRow, type HotTopicRow, type MarketEventRow } from "@/lib/supabase-mappers";
 import type { HotTopic, HotTopicCreateInput, MarketEvent, MarketEventCreateInput } from "@/types/market";
 
@@ -27,8 +27,13 @@ const eventSelect = `
   )
 `;
 
+function firstRpcRow<T>(data: T | T[] | null): T | null {
+  if (!data) return null;
+  return Array.isArray(data) ? (data[0] ?? null) : data;
+}
+
 export async function listHotTopics(filters: TopicFilters): Promise<{ data: HotTopic[]; source: "supabase" | "mock" }> {
-  const supabase = getSupabaseAdmin();
+  const supabase = getSupabaseReadClient();
 
   if (!supabase) {
     return { data: filterTopics(hotTopics, filters), source: "mock" };
@@ -45,7 +50,7 @@ export async function listHotTopics(filters: TopicFilters): Promise<{ data: HotT
 }
 
 export async function getHotTopicById(id: string): Promise<{ data: HotTopic | null; source: "supabase" | "mock" }> {
-  const supabase = getSupabaseAdmin();
+  const supabase = getSupabaseReadClient();
 
   if (!supabase) {
     return { data: hotTopics.find((item) => item.id === id) ?? null, source: "mock" };
@@ -65,6 +70,23 @@ export async function createHotTopic(input: HotTopicCreateInput): Promise<{ data
   const supabase = getSupabaseAdmin();
 
   if (!supabase) {
+    const writeClient = getSupabaseReadClient();
+    const adminToken = process.env.ADMIN_API_TOKEN;
+
+    if (writeClient && adminToken) {
+      const { data, error } = await writeClient.rpc("admin_insert_hot_topic", {
+        admin_token: adminToken,
+        payload: input
+      });
+      const row = firstRpcRow(data as HotTopicRow | HotTopicRow[] | null);
+
+      if (error || !row) {
+        throw new Error(error?.message || "热点信息写入失败");
+      }
+
+      return { data: { ...mapHotTopicRow(row), relatedStocks: input.relatedStocks }, source: "supabase" };
+    }
+
     return {
       data: {
         id: `topic-admin-${Date.now()}`,
@@ -93,11 +115,11 @@ export async function createHotTopic(input: HotTopicCreateInput): Promise<{ data
     throw new Error(error?.message || "热点信息写入失败");
   }
 
-  return { data: mapHotTopicRow(data as HotTopicRow), source: "supabase" };
+  return { data: { ...mapHotTopicRow(data as HotTopicRow), relatedStocks: input.relatedStocks }, source: "supabase" };
 }
 
 export async function listMarketEvents(filters: EventFilters): Promise<{ data: MarketEvent[]; source: "supabase" | "mock" }> {
-  const supabase = getSupabaseAdmin();
+  const supabase = getSupabaseReadClient();
 
   if (!supabase) {
     return { data: filterEvents(marketEvents, filters), source: "mock" };
@@ -114,7 +136,7 @@ export async function listMarketEvents(filters: EventFilters): Promise<{ data: M
 }
 
 export async function getMarketEventById(id: string): Promise<{ data: MarketEvent | null; source: "supabase" | "mock" }> {
-  const supabase = getSupabaseAdmin();
+  const supabase = getSupabaseReadClient();
 
   if (!supabase) {
     return { data: marketEvents.find((item) => item.id === id) ?? null, source: "mock" };
@@ -134,6 +156,23 @@ export async function createMarketEvent(input: MarketEventCreateInput): Promise<
   const supabase = getSupabaseAdmin();
 
   if (!supabase) {
+    const writeClient = getSupabaseReadClient();
+    const adminToken = process.env.ADMIN_API_TOKEN;
+
+    if (writeClient && adminToken) {
+      const { data, error } = await writeClient.rpc("admin_insert_market_event", {
+        admin_token: adminToken,
+        payload: input
+      });
+      const row = firstRpcRow(data as MarketEventRow | MarketEventRow[] | null);
+
+      if (error || !row) {
+        throw new Error(error?.message || "市场事件写入失败");
+      }
+
+      return { data: { ...mapMarketEventRow(row), relatedStocks: input.relatedStocks }, source: "supabase" };
+    }
+
     return {
       data: {
         id: `event-admin-${Date.now()}`,
@@ -163,5 +202,5 @@ export async function createMarketEvent(input: MarketEventCreateInput): Promise<
     throw new Error(error?.message || "市场事件写入失败");
   }
 
-  return { data: mapMarketEventRow(data as MarketEventRow), source: "supabase" };
+  return { data: { ...mapMarketEventRow(data as MarketEventRow), relatedStocks: input.relatedStocks }, source: "supabase" };
 }
