@@ -1,4 +1,6 @@
 import { fail, ok } from "@/lib/api-response";
+import { verifyAdminRequest } from "@/lib/admin-auth";
+import { createMarketEvent } from "@/lib/market-repository";
 import type { MarketEventCreateInput } from "@/types/market";
 
 const requiredFields: Array<keyof MarketEventCreateInput> = [
@@ -17,6 +19,10 @@ const requiredFields: Array<keyof MarketEventCreateInput> = [
 ];
 
 export async function POST(request: Request) {
+  if (!verifyAdminRequest(request)) {
+    return fail("管理员口令无效", 401);
+  }
+
   try {
     const body = (await request.json()) as Partial<MarketEventCreateInput>;
     const missing = requiredFields.filter((field) => body[field] === undefined || body[field] === "");
@@ -25,14 +31,10 @@ export async function POST(request: Request) {
       return fail(`缺少必要字段：${missing.join(", ")}`);
     }
 
-    return ok(
-      {
-        id: `event-admin-${Date.now()}`,
-        ...body
-      },
-      "事件已模拟创建，后续可替换为 Supabase 写入"
-    );
-  } catch {
-    return fail("请求体不是合法 JSON");
+    const result = await createMarketEvent(body as MarketEventCreateInput);
+
+    return ok(result.data, result.source === "supabase" ? "事件已写入 Supabase" : "事件已模拟创建，本地缺少 Supabase env");
+  } catch (error) {
+    return fail(error instanceof Error ? error.message : "请求体不是合法 JSON");
   }
 }

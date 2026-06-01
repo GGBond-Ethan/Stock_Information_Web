@@ -21,7 +21,7 @@ const empty = {
   sourceUrl: "https://example.com"
 };
 
-export function EventForm({ onCreated }: { onCreated: (event: MarketEvent) => void }) {
+export function EventForm({ adminToken, onCreated }: { adminToken: string; onCreated: (event: MarketEvent) => void }) {
   const [form, setForm] = useState(empty);
   const [status, setStatus] = useState("");
 
@@ -37,7 +37,10 @@ export function EventForm({ onCreated }: { onCreated: (event: MarketEvent) => vo
 
     const res = await fetch("/api/admin/events", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(adminToken ? { "x-admin-token": adminToken } : {})
+      },
       body: JSON.stringify(payload)
     });
     const json = await res.json();

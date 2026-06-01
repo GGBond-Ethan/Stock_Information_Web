@@ -1,13 +1,13 @@
 import { fail, ok } from "@/lib/api-response";
-import { marketEvents } from "@/lib/mock/events";
+import { getMarketEventById } from "@/lib/market-repository";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const event = marketEvents.find((item) => item.id === id);
+  const result = await getMarketEventById(id);
 
-  if (!event) {
+  if (!result.data) {
     return fail("未找到对应事件", 404);
   }
 
-  return ok(event);
+  return ok(result.data, `数据来源：${result.source}`);
 }

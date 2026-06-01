@@ -1,4 +1,6 @@
 import { fail, ok } from "@/lib/api-response";
+import { verifyAdminRequest } from "@/lib/admin-auth";
+import { createHotTopic } from "@/lib/market-repository";
 import type { HotTopicCreateInput } from "@/types/market";
 
 const requiredFields: Array<keyof HotTopicCreateInput> = [
@@ -16,6 +18,10 @@ const requiredFields: Array<keyof HotTopicCreateInput> = [
 ];
 
 export async function POST(request: Request) {
+  if (!verifyAdminRequest(request)) {
+    return fail("管理员口令无效", 401);
+  }
+
   try {
     const body = (await request.json()) as Partial<HotTopicCreateInput>;
     const missing = requiredFields.filter((field) => body[field] === undefined || body[field] === "");
@@ -28,14 +34,10 @@ export async function POST(request: Request) {
       return fail("sentimentScore 必须是 0-100 的数字");
     }
 
-    return ok(
-      {
-        id: `topic-admin-${Date.now()}`,
-        ...body
-      },
-      "热点信息已模拟创建，后续可替换为 Supabase 写入"
-    );
-  } catch {
-    return fail("请求体不是合法 JSON");
+    const result = await createHotTopic(body as HotTopicCreateInput);
+
+    return ok(result.data, result.source === "supabase" ? "热点信息已写入 Supabase" : "热点信息已模拟创建，本地缺少 Supabase env");
+  } catch (error) {
+    return fail(error instanceof Error ? error.message : "请求体不是合法 JSON");
   }
 }

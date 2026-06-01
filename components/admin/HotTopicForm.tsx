@@ -19,7 +19,7 @@ const empty = {
   sourceUrl: "https://example.com"
 };
 
-export function HotTopicForm({ onCreated }: { onCreated: (topic: HotTopic) => void }) {
+export function HotTopicForm({ adminToken, onCreated }: { adminToken: string; onCreated: (topic: HotTopic) => void }) {
   const [form, setForm] = useState(empty);
   const [status, setStatus] = useState("");
 
@@ -37,7 +37,10 @@ export function HotTopicForm({ onCreated }: { onCreated: (topic: HotTopic) => vo
 
     const res = await fetch("/api/admin/hot-topics", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(adminToken ? { "x-admin-token": adminToken } : {})
+      },
       body: JSON.stringify(payload)
     });
     const json = await res.json();

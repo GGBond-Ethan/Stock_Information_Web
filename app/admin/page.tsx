@@ -6,6 +6,7 @@ import { EventForm } from "@/components/admin/EventForm";
 import { HotTopicForm } from "@/components/admin/HotTopicForm";
 import { Button } from "@/components/ui/Button";
 import { GlassPanel, PanelBody, PanelHeader } from "@/components/ui/GlassPanel";
+import { Input } from "@/components/ui/Input";
 import type { ApiResponse } from "@/types/api";
 import type { HotTopic, MarketEvent } from "@/types/market";
 
@@ -13,8 +14,10 @@ export default function AdminPage() {
   const [topics, setTopics] = useState<HotTopic[]>([]);
   const [events, setEvents] = useState<MarketEvent[]>([]);
   const [note, setNote] = useState("第一版后台使用本地状态模拟编辑和删除，新增时会调用 POST API 做字段校验。");
+  const [adminToken, setAdminToken] = useState("");
 
   useEffect(() => {
+    setAdminToken(window.localStorage.getItem("admin-api-token") ?? "");
     Promise.all([
       fetch("/api/hot-topics").then((res) => res.json() as Promise<ApiResponse<HotTopic[]>>),
       fetch("/api/events").then((res) => res.json() as Promise<ApiResponse<MarketEvent[]>>)
@@ -23,6 +26,11 @@ export default function AdminPage() {
       if (eventRes.success) setEvents(eventRes.data);
     });
   }, []);
+
+  function saveAdminToken(value: string) {
+    setAdminToken(value);
+    window.localStorage.setItem("admin-api-token", value);
+  }
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
@@ -33,17 +41,32 @@ export default function AdminPage() {
           <p className="mt-2 text-sm text-slate-400">{note}</p>
         </div>
 
+        <GlassPanel>
+          <PanelBody className="grid gap-3 p-4 md:grid-cols-[1fr_260px] md:items-center">
+            <div>
+              <h3 className="text-sm font-semibold text-white">管理员写入口令</h3>
+              <p className="mt-1 text-xs text-slate-500">线上环境需要和 Vercel 的 `ADMIN_API_TOKEN` 一致；口令仅保存在当前浏览器 localStorage。</p>
+            </div>
+            <Input
+              type="password"
+              placeholder="输入 ADMIN_API_TOKEN"
+              value={adminToken}
+              onChange={(event) => saveAdminToken(event.target.value)}
+            />
+          </PanelBody>
+        </GlassPanel>
+
         <div className="grid gap-3 xl:grid-cols-2">
           <GlassPanel>
             <PanelHeader title="新增热点信息" />
             <PanelBody>
-              <HotTopicForm onCreated={(topic) => setTopics((prev) => [topic, ...prev])} />
+              <HotTopicForm adminToken={adminToken} onCreated={(topic) => setTopics((prev) => [topic, ...prev])} />
             </PanelBody>
           </GlassPanel>
           <GlassPanel>
             <PanelHeader title="新增市场事件" />
             <PanelBody>
-              <EventForm onCreated={(event) => setEvents((prev) => [event, ...prev])} />
+              <EventForm adminToken={adminToken} onCreated={(event) => setEvents((prev) => [event, ...prev])} />
             </PanelBody>
           </GlassPanel>
         </div>

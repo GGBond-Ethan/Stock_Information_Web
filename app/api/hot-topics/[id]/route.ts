@@ -1,13 +1,13 @@
 import { fail, ok } from "@/lib/api-response";
-import { hotTopics } from "@/lib/mock/hotTopics";
+import { getHotTopicById } from "@/lib/market-repository";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const topic = hotTopics.find((item) => item.id === id);
+  const result = await getHotTopicById(id);
 
-  if (!topic) {
+  if (!result.data) {
     return fail("未找到对应热点信息", 404);
   }
 
-  return ok(topic);
+  return ok(result.data, `数据来源：${result.source}`);
 }

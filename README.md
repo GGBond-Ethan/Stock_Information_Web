@@ -51,22 +51,42 @@ type ApiResponse<T> = {
 ## Supabase 接入
 
 1. 在 Supabase 创建项目。
-2. 打开 SQL Editor，执行 `database/schema.sql`。
-3. 在 Vercel 或本地 `.env.local` 添加：
+2. 推荐使用 `supabase/migrations/20260601000100_initial_market_schema.sql` 管理数据库结构。
+3. 可在 SQL Editor 执行 `supabase/seed.sql` 导入演示数据。
+4. 在 Vercel 或本地 `.env.local` 添加：
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=你的 Supabase URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=你的 Supabase anon key
+SUPABASE_SERVICE_ROLE_KEY=你的 Supabase service role key
+ADMIN_API_TOKEN=后台写入口令
 ```
 
-4. 后续将 `lib/mock` 的数据读取替换为 Supabase 查询。
+生产环境会优先读取 Supabase；本地缺少 Supabase 环境变量时会自动回退 Mock 数据。
 
 ## 部署到 Vercel
 
 1. 将代码推送到 GitHub。
-2. 在 Vercel 导入仓库。
+2. 在 Vercel 导入仓库 `GGBond-Ethan/Stock_Information_Web`。
 3. Framework Preset 选择 Next.js。
-4. 添加 Supabase 环境变量。
+4. Build Command 使用 `npm run build`。
+5. 添加 Supabase 和后台环境变量：
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+ADMIN_API_TOKEN
+```
+
+6. 点击 Deploy。
+7. 部署后访问 `/api/hot-topics` 和 `/api/events?month=2026-05` 验证数据来源。
+
+## 后台写入说明
+
+`/admin` 页面新增热点或事件时，需要填写管理员写入口令。该口令必须和 Vercel 环境变量 `ADMIN_API_TOKEN` 一致。口令只保存在当前浏览器 `localStorage`，不会写入代码仓库。
+
+注意：`SUPABASE_SERVICE_ROLE_KEY` 只能配置在 Vercel 环境变量中，不要以 `NEXT_PUBLIC_` 开头，也不要暴露到前端。
 5. 点击 Deploy。
 
 ## 项目亮点
